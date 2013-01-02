@@ -38,7 +38,12 @@ if ( !defined( 'ABSPATH' ) )
 /**
  *  Include required files to get this show on the road
  */
+
 require_once 'wp-s3media.php';
+require_once 'class/s3media_option.php';
+require_once 'class/S3.php';
+
+//require_once 'class/s3media_aws.php'; // not using it for now due to issue with use
 
 /**
  * Add action 'plugins_loaded' to instantiate main class.
