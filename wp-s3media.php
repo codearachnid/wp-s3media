@@ -36,6 +36,9 @@ if( ! class_exists('s3media')) {
 			$this->dir = trailingslashit( basename( $this->path ) );
 			$this->url = plugins_url() . '/' . $this->dir;
 			$this->base_slug = apply_filters( self::DOMAIN . '_base_slug', 'wishlist');
+
+			new s3media_option;
+			
 		}
 
 		public static function lazy_loader( $class_name ) {
