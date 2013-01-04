@@ -1,0 +1,1 @@
+ https://github.com/wmark/CDN-Linker could be an interesting way to fix links retroactively in the content if we have to schedule uploading to s3.
