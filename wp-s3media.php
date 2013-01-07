@@ -43,8 +43,13 @@ if( ! class_exists('s3media')) {
 			static::$s3media_options = new s3media_option;
       
       // add_action('wp_handle_upload', array($this, 'process_uploads') );
-      add_action('add_attachment', array($this, 'process_uploads') );
-      add_action('edit_attachment', array($this, 'process_uploads') );
+      
+      // main image
+      add_action('add_attachment', array($this, 'process_uploads') , 30 );
+      add_action('edit_attachment', array($this, 'process_uploads') , 30 );
+      
+      // thumbnail filter - wp_create_thumbnail
+      // image size filter - image_make_intermediate_size
 		}
     
 		public static function lazy_loader( $class_name ) {
@@ -59,12 +64,20 @@ if( ! class_exists('s3media')) {
 			return trailingslashit( dirname( __FILE__ ) );
 		}
     
-    public function process_uploads( $attachment_id ){
-           
-      $metadata = wp_get_attachment_metadata( $attachment_id );
-      $uploads = wp_upload_dir();
+    public function process_uploads( $attachment_ID ){
       
-      // s3media::s3_upload_file($file_url, $uri);
+      // $uploads = wp_upload_dir();
+      $abs_path = get_attached_file($attachment_ID);
+      $relative_path = _wp_relative_upload_path($abs_path);
+      
+      $success = s3media::s3_upload_file($abs_path, $relative_path);
+      // after media is successfully uploaded, delete local media and set guid to point to proper s3 media location
+      
+      if( ! is_wp_error( $success ) && $success ){
+        // log s3 success
+      }else{
+        // log s3 error
+      }
       
     }
     
@@ -76,6 +89,10 @@ if( ! class_exists('s3media')) {
       }catch(Exception $e){
         return WP_Error('broke', __('Unrecognized access|secret pair.'));
       }
+    }
+    
+    public function s3_get_option($option){
+      return static::$s3media_options->get_option($option);
     }
         
     public function s3_list_buckets($details = false){
@@ -114,9 +131,11 @@ if( ! class_exists('s3media')) {
     
     // uri can contain path like year/month/day/filename to make sub folders
     public function s3_upload_file($file, $uri){
+      set_time_limit(300); // 5 minutes wait if needed - not elegent :(, make it better
+      
       $s3 = $this->s3_get();
       try{
-        $bucket = static::$s3media_options->get_option('bucket');
+        $bucket = $this->s3_get_option('bucket');
         $input = $s3->inputResource(fopen($file, "rb"), filesize($file));
         
         if (S3::putObject($input, $bucket, $uri, S3::ACL_PUBLIC_READ)) {

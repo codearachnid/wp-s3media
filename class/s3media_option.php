@@ -16,7 +16,7 @@ if( !class_exists('s3media_option')){
 		}
 
 		function get_option( $key = null ) {
-			if( is_null($key) || !empty($this->options[$key])) {
+			if( is_null($key) || empty($this->options[$key])) {
 				return false;
 			} else {
 				return $this->options[$key];
