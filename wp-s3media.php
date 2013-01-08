@@ -44,12 +44,18 @@ if( ! class_exists('s3media')) {
       
       // add_action('wp_handle_upload', array($this, 'process_uploads') );
       
-      // main image
+      // attachment actions
       add_action('add_attachment', array($this, 'process_uploads') , 30 );
       add_action('edit_attachment', array($this, 'process_uploads') , 30 );
+      add_action('delete_attachment', array($this, 'process_delete_attachment') , 30 );
+//      add_filter('wp_create_thumbnail', array($this, 'process_create_thumbnails'), 30 );
+//      add_filter('image_make_intermediate_size', array($this, 'process_image_make_intermediate_size'), 30 );
+//      add_filter('wp_get_attachment_image_attributes', array($this, 'process_get_attachment_image_attributes'), 30 ); // $attr, $attachment
       
-      // thumbnail filter - wp_create_thumbnail
-      // image size filter - image_make_intermediate_size
+      // attachment thumbnail filters
+      add_filter('wp_get_attachment_url', array($this, 'process_get_attachmentment_url') );
+      add_filter('wp_get_attachment_thumb_url', array($this, 'process_get_attachment_thumb_url') );
+      add_filter('wp_update_attachment_metadata', array($this, 'process_update_attachment_metadata') );
 		}
     
 		public static function lazy_loader( $class_name ) {
@@ -69,7 +75,6 @@ if( ! class_exists('s3media')) {
       // $uploads = wp_upload_dir();
       $abs_path = get_attached_file($attachment_ID);
       $relative_path = _wp_relative_upload_path($abs_path);
-      
       $success = s3media::s3_upload_file($abs_path, $relative_path);
       // after media is successfully uploaded, delete local media and set guid to point to proper s3 media location
       
@@ -80,6 +85,52 @@ if( ! class_exists('s3media')) {
       }
       
     }
+    
+    public function process_delete_attachment ( $attachment_ID ) {
+      // calls to remove the attachment for s3
+      // must remove the related thumbnails as well
+    }
+    
+    public function process_get_attachmentment_url( $url ){
+      // change it to s3 url http://bucket_name.s3.amazonaws.com/...
+//      echo '<pre>';
+//        print_r( $url );
+//      echo '</pre>';
+      return $url;
+    }
+    
+    public function process_get_attachment_thumb_url ( $url ) {
+      // change it to s3
+      return $url;
+    }
+    
+    public function process_update_attachment_metadata ( $meta ) {
+      set_time_limit(300);
+      
+      $uploads = wp_upload_dir();
+      $abspath = $uploads['path'];
+      
+      if( isset( $meta['sizes'] ) ){
+        foreach( $meta['sizes'] as $size => $info ){
+          $path = $abspath.'/'.$info['file'];
+          $uri = _wp_relative_upload_path( $path );
+          $success = s3media::s3_upload_file($path, $uri);
+          if( ! is_wp_error( $success ) && $success ){
+            // log s3 success
+          }else{
+            // log s3 error
+          }
+        }
+      }
+    }
+    
+//    public function process_get_attachment_image_attributes ( $attr, $attachment ){
+//      echo '<pre>';
+//        print_r($attr);
+//        print_r($attachment);
+//      echo '</pre>';
+//      exit;
+//    }
     
     public function s3_get(){
       try{
