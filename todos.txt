@@ -1,1 +1,6 @@
- https://github.com/wmark/CDN-Linker could be an interesting way to fix links retroactively in the content if we have to schedule uploading to s3.
+- https://github.com/wmark/CDN-Linker could be an interesting way to fix links retroactively in the content if we have to schedule uploading to s3.
+- if an image was to be s3ed but was not due to size limit as run time, write cron to upload and handle such images
+- add cdn linker options to the settings page
+- use cdn links to generate the URLs for front end (modification to s3_base_url attribute)
+- add respective filters and actions
+- different file permissions level - as of now there are only public files

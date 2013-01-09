@@ -76,6 +76,13 @@ if( !class_exists('s3media_option')){
 				'label_for' => 'bucket',
 				'description' => __('Allowed characters for file and folder names are: a-z, A-Z, 0-9,-,...','s3media')
 				));
+      
+      // upload settings
+			add_settings_section( 'upload', __('AWS S3 Upload Options', 's3media'), function(){}, parent::DOMAIN );
+			add_settings_field( 'max_upload_size', __('Max Upload Size (kb)', 's3media'), array( $this, 'option_builder'), parent::DOMAIN, 'upload', array(
+				'label_for' => 'max_upload_size',
+				'description' => __('Enter the file size in kb to upload at run time. If a filesize exceeds this, it will be uploaded using cron.','s3media')
+				));
 		}
 
 		public function option_builder( $args ){
